@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import NoteEditor from './pages/NoteEditor'
 import Settings from './pages/Settings'
 import NoteView from './pages/NoteView'
+import SharedNotePage from './pages/SharedNotePage'
 
 function useGlobalShortcuts() {
   const navigate = useNavigate()
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/view/:id" element={<NoteView />} />
           <Route path="/new" element={<NoteEditor createNew />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/shared" element={<SharedNotePage />} />
         </Routes>
       </main>
     </div>
