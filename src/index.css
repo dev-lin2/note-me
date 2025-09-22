@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-default: #fff8c5;
+  --text-default: #222222;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+/* Simple autosize for title input */
+.title-input {
+  background: transparent;
+  outline: none;
+}
+
