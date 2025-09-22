@@ -3,10 +3,13 @@
 function hexToRgb(hex: string) {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (!m) return null
+  const r = m[1]!
+  const g = m[2]!
+  const b = m[3]!
   return {
-    r: parseInt(m[1], 16),
-    g: parseInt(m[2], 16),
-    b: parseInt(m[3], 16),
+    r: parseInt(r, 16),
+    g: parseInt(g, 16),
+    b: parseInt(b, 16),
   }
 }
 
@@ -48,4 +51,3 @@ export const PRESET_COLORS = [
   '#FEE2E2',
   '#F5F5F4',
 ]
-

@@ -10,6 +10,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
   const navigate = useNavigate()
   const [note, setNote] = useState<Note | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const id = params.id
 
   function defaults() {
@@ -18,7 +19,9 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
       if (!raw) return { bgColor: '#FFF8C5', textColor: '#222222' }
       const s = JSON.parse(raw)
       return { bgColor: s.defaultBg || '#FFF8C5', textColor: s.defaultText || '#222222' }
-    } catch { return { bgColor: '#FFF8C5', textColor: '#222222' }}
+    } catch {
+      return { bgColor: '#FFF8C5', textColor: '#222222' }
+    }
   }
 
   useEffect(() => {
@@ -37,7 +40,6 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
       if (id) {
         const n = await getNote(id)
         if (!n) {
-          // If not found, create a new note and redirect
           const created = await createNote(defaults())
           if (!cancelled) {
             setNote(created)
@@ -64,8 +66,10 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
         if (!note) return
         const updated = await updateNote(note.id, { title: value.slice(0, 120) })
         setNote(updated)
-      }, 200),
-    [note]
+        setSaving(false)
+      }, 250),
+    // tie to note id so closures stay fresh
+    [note?.id]
   )
 
   const saveContent = useMemo(
@@ -74,24 +78,41 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
         if (!note) return
         const updated = await updateNote(note.id, { content: value })
         setNote(updated)
-      }, 200),
-    [note]
+        setSaving(false)
+      }, 300),
+    [note?.id]
   )
 
   if (loading || !note) return <div className="p-4">Loading…</div>
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <div className="flex items-center gap-2 mb-3">
-        <button onClick={() => navigate('/')} className="border rounded px-3 py-2">Back</button>
-        <div className="ml-auto flex items-center gap-2">
+      {/* Sticky toolbar */}
+      <div className="sticky top-0 z-30 -mx-4 px-4 py-2 bg-white/70 dark:bg-black/50 backdrop-blur border-b border-gray-200 dark:border-gray-800 flex items-center gap-2 transition-smooth">
+        <button onClick={() => navigate('/')} className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98]">Back</button>
+        {note.archived && (
+          <span className="ml-2 text-xs px-2 py-1 rounded-full border border-gray-300 dark:border-gray-700">Archived</span>
+        )}
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          <div className="px-2 py-1 rounded bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 transition-smooth" aria-live="polite">
+            {saving ? 'Saving…' : 'Saved'}
+          </div>
           <button
             onClick={async () => {
               await navigator.clipboard.writeText(window.location.href)
             }}
-            className="border rounded px-3 py-2"
+            className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98]"
           >
             Copy Link
+          </button>
+          <button
+            onClick={async () => {
+              const updated = await updateNote(note.id, { archived: !note.archived })
+              setNote(updated)
+            }}
+            className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98]"
+          >
+            {note.archived ? 'Unarchive' : 'Archive'}
           </button>
           <button
             onClick={async () => {
@@ -100,34 +121,42 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
                 navigate('/')
               }
             }}
-            className="border rounded px-3 py-2 text-red-600"
+            className="px-3 py-2 rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 transition-smooth active:scale-[.98]"
           >
             Delete
           </button>
         </div>
       </div>
+
+      {/* Editor card */}
       <div
-        className="rounded border p-4"
+        className="rounded-md border mt-3 p-4 transition-smooth"
         style={{ backgroundColor: note.bgColor, color: note.textColor }}
       >
         <input
-          className="title-input w-full text-2xl font-semibold mb-2"
+          className="title-input w-full text-2xl font-semibold mb-2 placeholder-black/40 dark:placeholder-white/50"
           placeholder="Title"
           defaultValue={note.title}
-          onChange={(e) => saveTitle(e.target.value)}
+          onChange={(e) => {
+            setSaving(true)
+            saveTitle(e.target.value)
+          }}
           maxLength={120}
           style={{ backgroundColor: 'transparent', color: note.textColor }}
         />
         <textarea
-          className="w-full min-h-[50vh] resize-vertical bg-transparent outline-none"
-          placeholder="Write your note…"
+          className="w-full min-h-[55vh] resize-vertical bg-transparent outline-none leading-6 placeholder-black/40 dark:placeholder-white/50"
+          placeholder="Capture your thoughts…"
           defaultValue={note.content}
-          onChange={(e) => saveContent(e.target.value)}
+          onChange={(e) => {
+            setSaving(true)
+            saveContent(e.target.value)
+          }}
           style={{ color: note.textColor }}
         />
       </div>
 
-      <div className="mt-3 flex items-center gap-3">
+      <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-3">
         <ColorPicker
           bgColor={note.bgColor}
           textColor={note.textColor}
@@ -136,7 +165,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
             setNote(updated)
           }}
         />
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           Last edited: {new Date(note.updatedAt).toLocaleString()}
         </div>
       </div>

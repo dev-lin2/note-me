@@ -9,6 +9,7 @@ export interface Note {
   createdAt: number
   updatedAt: number
   archived?: boolean
+  order?: number
 }
 
 export interface AppSettings {
@@ -24,4 +25,3 @@ export const DefaultSettings: AppSettings = {
   defaultBg: '#FFF8C5',
   defaultText: '#222222',
 }
-

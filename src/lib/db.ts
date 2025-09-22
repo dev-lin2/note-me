@@ -75,6 +75,35 @@ export async function deleteNote(id: string): Promise<void> {
   await run('readwrite', (s) => s.delete(id))
 }
 
+// Persist an explicit order for the provided note IDs (0..n-1)
+export async function setOrders(ids: string[]): Promise<void> {
+  await openDB().then(
+    (db) =>
+      new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(STORE, 'readwrite')
+        const store = tx.objectStore(STORE)
+        let i = 0
+        const assignNext = () => {
+          if (i >= ids.length) return
+          const id = ids[i++]!
+          const getReq = store.get(id as IDBValidKey)
+          getReq.onsuccess = () => {
+            const n = getReq.result as Note | undefined
+            if (n) {
+              // Do not bump updatedAt for ordering changes
+              const updated: Note = { ...n, order: i - 1 }
+              store.put(updated)
+            }
+            assignNext()
+          }
+        }
+        assignNext()
+        tx.oncomplete = () => resolve()
+        tx.onabort = () => reject(tx.error)
+      })
+  )
+}
+
 export async function exportJSON(): Promise<string> {
   const notes = await getAllNotes()
   return JSON.stringify({ version: 1, exportedAt: Date.now(), notes })
@@ -94,4 +123,3 @@ export async function importJSON(json: string): Promise<void> {
       })
   )
 }
-
