@@ -3,6 +3,7 @@ import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import Home from './pages/Home'
 import NoteEditor from './pages/NoteEditor'
 import Settings from './pages/Settings'
+import NoteView from './pages/NoteView'
 
 function useGlobalShortcuts() {
   const navigate = useNavigate()
@@ -33,12 +34,12 @@ export default function App() {
       <header className="border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center gap-3 bg-white/70 dark:bg-black/50 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40 transition-smooth">
         <Link to="/" className="font-semibold flex items-center gap-2">
           <span className="text-xl">🗒️</span>
-          <span>NoteMe</span>
+          <span className="text-lg">Note Me!</span>
         </Link>
         <div className="ml-auto flex items-center gap-2 text-sm">
           <Link
             to="/new"
-            className="hidden sm:inline-flex items-center gap-2 rounded-md px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-smooth active:scale-[.98]"
+            className="inline-flex items-center gap-2 rounded-md px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-smooth active:scale-[.98]"
             aria-label="Create new note (Ctrl/Cmd+N)"
             title="New Note (Ctrl/Cmd+N)"
           >
@@ -55,6 +56,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/note/:id" element={<NoteEditor />} />
+          <Route path="/view/:id" element={<NoteView />} />
           <Route path="/new" element={<NoteEditor createNew />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

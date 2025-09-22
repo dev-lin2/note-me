@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useRef } from 'react'
 import type { Note } from '../lib/schema'
 import { updateNote, deleteNote } from '../lib/db'
+import { stripHtmlToText } from '../utils/sanitize'
 
 type Props = {
   note: Note
@@ -16,14 +18,25 @@ type Props = {
 }
 
 export default function NoteCard({ note, onArchived, onDeleted, className = '', draggable, onDragStart, onDragOver, onDrop, onDragLeave, index }: Props) {
-  const preview = (note.content || '').trim()
+  const navigate = useNavigate()
+  const linkRef = useRef<HTMLAnchorElement | null>(null)
+  const preview = stripHtmlToText(note.content || '')
   const title = (note.title || '').trim() || 'Untitled'
 
   async function toggleArchive(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    await updateNote(note.id, { archived: !note.archived })
-    onArchived?.()
+    const el = linkRef.current
+    if (el) {
+      el.classList.add('animate-archive-out')
+      setTimeout(async () => {
+        await updateNote(note.id, { archived: !note.archived })
+        onArchived?.()
+      }, 180)
+    } else {
+      await updateNote(note.id, { archived: !note.archived })
+      onArchived?.()
+    }
   }
 
   async function handleDelete(e: React.MouseEvent) {
@@ -35,7 +48,7 @@ export default function NoteCard({ note, onArchived, onDeleted, className = '', 
     }
   }
 
-  const base = "relative rounded-md border border-gray-200 dark:border-gray-700 p-3 block card transition-smooth animate-fade-in-up"
+  const base = "relative rounded-md border border-gray-200 dark:border-gray-700 p-3 pb-12 sm:pb-3 block card transition-smooth animate-fade-in-up"
 
   const linkStyle: React.CSSProperties = typeof index === 'number'
     ? { backgroundColor: note.bgColor, color: note.textColor, animationDelay: `${Math.min(index * 40, 240)}ms` }
@@ -47,13 +60,22 @@ export default function NoteCard({ note, onArchived, onDeleted, className = '', 
       className={`${base} ${className}`}
       style={linkStyle}
       data-note-id={note.id}
+      ref={linkRef}
       draggable={draggable}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-      <div className="absolute top-2 right-2 flex gap-1">
+      <div className="absolute top-2 right-2 hidden sm:flex gap-1">
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/view/${note.id}`) }}
+          title="View"
+          className="rounded-md bg-white/70 text-black dark:bg-black/40 dark:text-white backdrop-blur px-2 py-1 text-xs hover:opacity-100 opacity-90"
+          aria-label="View note"
+        >
+          View
+        </button>
         <button
           onClick={toggleArchive}
           title={note.archived ? 'Unarchive' : 'Archive'}
@@ -78,6 +100,35 @@ export default function NoteCard({ note, onArchived, onDeleted, className = '', 
       </div>
       <div className="text-xs opacity-70 mt-2" style={{ color: note.textColor }}>
         {new Date(note.updatedAt).toLocaleString()} {note.archived && <span className="ml-2 px-2 py-0.5 rounded-full border border-current/30 text-[10px] align-middle">Archived</span>}
+      </div>
+
+      {/* Mobile actions */}
+      <div className="sm:hidden absolute left-2 right-2 bottom-2 flex items-center justify-between gap-2">
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            navigate(`/view/${note.id}`)
+          }}
+          className="flex-1 rounded-md bg-white/80 dark:bg-black/40 text-black dark:text-white backdrop-blur px-3 py-2 text-sm"
+          aria-label="View note"
+        >
+          View
+        </button>
+        <button
+          onClick={toggleArchive}
+          className="flex-1 rounded-md bg-white/80 dark:bg-black/40 text-black dark:text-white backdrop-blur px-3 py-2 text-sm"
+          aria-label={note.archived ? 'Unarchive note' : 'Archive note'}
+        >
+          {note.archived ? 'Unarchive' : 'Archive'}
+        </button>
+        <button
+          onClick={handleDelete}
+          className="flex-1 rounded-md bg-white/80 dark:bg-black/40 text-red-600 dark:text-red-400 backdrop-blur px-3 py-2 text-sm"
+          aria-label="Delete note"
+        >
+          Delete
+        </button>
       </div>
     </Link>
   )

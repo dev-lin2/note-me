@@ -60,6 +60,7 @@ export async function createNote(partial: Partial<Note> = {}): Promise<Note> {
     archived: false,
   }
   await run('readwrite', (s) => s.put(note))
+  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'create', id: note.id } })) } catch {}
   return note
 }
 
@@ -68,11 +69,13 @@ export async function updateNote(id: string, patch: Partial<Note>): Promise<Note
   if (!existing) throw new Error('Note not found')
   const updated: Note = { ...existing, ...patch, updatedAt: Date.now() }
   await run('readwrite', (s) => s.put(updated))
+  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'update', id } })) } catch {}
   return updated
 }
 
 export async function deleteNote(id: string): Promise<void> {
   await run('readwrite', (s) => s.delete(id))
+  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'delete', id } })) } catch {}
 }
 
 // Persist an explicit order for the provided note IDs (0..n-1)
@@ -102,6 +105,7 @@ export async function setOrders(ids: string[]): Promise<void> {
         tx.onabort = () => reject(tx.error)
       })
   )
+  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'reorder', ids } })) } catch {}
 }
 
 export async function exportJSON(): Promise<string> {
@@ -122,4 +126,5 @@ export async function importJSON(json: string): Promise<void> {
         tx.onabort = () => reject(tx.error)
       })
   )
+  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'import' } })) } catch {}
 }
