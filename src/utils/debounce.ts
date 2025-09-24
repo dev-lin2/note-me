@@ -1,7 +1,13 @@
-export function debounce<T extends (...args: unknown[]) => void>(fn: T, wait = 300) {
+export function debounce<P extends unknown[]>(
+  fn: (...args: P) => void | Promise<void>,
+  wait = 300,
+) {
   let t: number | undefined
-  return (...args: Parameters<T>) => {
+  return (...args: P) => {
     if (t) window.clearTimeout(t)
-    t = window.setTimeout(() => fn(...args), wait)
+    t = window.setTimeout(() => {
+      // Fire and forget for async handlers
+      void fn(...args)
+    }, wait)
   }
 }
