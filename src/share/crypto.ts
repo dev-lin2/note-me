@@ -7,11 +7,14 @@ function toArrayBuffer(view: Uint8Array): ArrayBuffer {
 }
 
 export async function encryptAesGcm(plain: Uint8Array): Promise<{ c: string; k: string }> {
-  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, [
+    'encrypt',
+    'decrypt',
+  ])
   const rawKey = new Uint8Array(await crypto.subtle.exportKey('raw', key))
   const iv = crypto.getRandomValues(new Uint8Array(12))
   const ct = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, toArrayBuffer(plain))
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, toArrayBuffer(plain)),
   )
   // Packet: [1-byte version=1][12B IV][ciphertext]
   const packet = new Uint8Array(1 + iv.length + ct.length)
@@ -30,7 +33,13 @@ export async function decryptAesGcm(c: string, k: string): Promise<Uint8Array> {
   const ct = packet.slice(13)
   const rawKey = fromBase64Url(k)
   if (rawKey.byteLength !== 32) throw new Error('Invalid key')
-  const key = await crypto.subtle.importKey('raw', toArrayBuffer(rawKey), { name: 'AES-GCM' }, false, ['decrypt'])
+  const key = await crypto.subtle.importKey(
+    'raw',
+    toArrayBuffer(rawKey),
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt'],
+  )
   const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, toArrayBuffer(ct))
   return new Uint8Array(plainBuf)
 }

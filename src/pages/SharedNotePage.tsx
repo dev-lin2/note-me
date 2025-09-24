@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { decodePayload } from '../share/codec'
-import { sanitizeHtml } from '../utils/sanitize'
-import { toHtmlFromMarkdownOrHtml } from '../utils/markdown'
+
 import { createNote } from '../lib/db'
+import { decodePayload } from '../share/codec'
+import { toHtmlFromMarkdownOrHtml } from '../utils/markdown'
+import { sanitizeHtml } from '../utils/sanitize'
 
 type State =
   | { status: 'loading' }
@@ -48,10 +49,10 @@ export default function SharedNotePage() {
         if (!payload?.note) throw new Error('This link does not contain a valid note.')
         if (cancelled) return
         setState({ status: 'ready', note: payload.note })
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (cancelled) return
         const msg =
-          typeof e?.message === 'string'
+          e instanceof Error && typeof e.message === 'string'
             ? e.message
             : 'Link is corrupted or unsupported.'
         setState({ status: 'error', message: msg })
@@ -70,7 +71,12 @@ export default function SharedNotePage() {
         <div className="p-4 max-w-xl mx-auto">
           <div className="rounded-md border border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/40 p-4">
             <div className="font-medium text-red-700 dark:text-red-300">{state.message}</div>
-            <button onClick={() => navigate('/')} className="mt-3 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900">Back to Home</button>
+            <button
+              onClick={() => navigate('/')}
+              className="mt-3 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
+            >
+              Back to Home
+            </button>
           </div>
         </div>
       )
@@ -78,9 +84,7 @@ export default function SharedNotePage() {
     const note = state.note
     return (
       <div className="p-4 max-w-3xl mx-auto">
-        <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">
-          Shared note (read-only)
-        </div>
+        <div className="mb-2 text-sm text-gray-600 dark:text-gray-300">Shared note (read-only)</div>
         <article
           className="rounded-md border mt-2 p-4 transition-smooth"
           style={{ backgroundColor: note.bgColor, color: note.textColor }}
@@ -92,7 +96,9 @@ export default function SharedNotePage() {
             <div
               className="wysiwyg leading-6 break-words"
               style={{ color: note.textColor }}
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(toHtmlFromMarkdownOrHtml(note.content)) }}
+              dangerouslySetInnerHTML={{
+                __html: sanitizeHtml(toHtmlFromMarkdownOrHtml(note.content)),
+              }}
             />
           ) : (
             <div className="italic opacity-70">No content</div>
@@ -130,7 +136,12 @@ export default function SharedNotePage() {
           >
             Copy Content
           </button>
-          <button onClick={() => navigate('/')} className="ml-auto px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900">Home</button>
+          <button
+            onClick={() => navigate('/')}
+            className="ml-auto px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
+          >
+            Home
+          </button>
         </div>
 
         {justAdded && (

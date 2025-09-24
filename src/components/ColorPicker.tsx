@@ -44,4 +44,3 @@ export default function ColorPicker({ bgColor, textColor, onChange }: Props) {
     </div>
   )
 }
-

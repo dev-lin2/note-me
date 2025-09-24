@@ -17,7 +17,18 @@ type Props = {
   index?: number
 }
 
-export default function NoteCard({ note, onArchived, onDeleted, className = '', draggable, onDragStart, onDragOver, onDrop, onDragLeave, index }: Props) {
+export default function NoteCard({
+  note,
+  onArchived,
+  onDeleted,
+  className = '',
+  draggable,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragLeave,
+  index,
+}: Props) {
   const navigate = useNavigate()
   const linkRef = useRef<HTMLAnchorElement | null>(null)
   const preview = stripHtmlToText(note.content || '')
@@ -48,11 +59,17 @@ export default function NoteCard({ note, onArchived, onDeleted, className = '', 
     }
   }
 
-  const base = "relative rounded-md border border-gray-200 dark:border-gray-700 p-3 pb-12 sm:pb-3 block card transition-smooth animate-fade-in-up"
+  const base =
+    'relative rounded-md border border-gray-200 dark:border-gray-700 p-3 pb-12 sm:pb-3 block card transition-smooth animate-fade-in-up'
 
-  const linkStyle: React.CSSProperties = typeof index === 'number'
-    ? { backgroundColor: note.bgColor, color: note.textColor, animationDelay: `${Math.min(index * 40, 240)}ms` }
-    : { backgroundColor: note.bgColor, color: note.textColor }
+  const linkStyle: React.CSSProperties =
+    typeof index === 'number'
+      ? {
+          backgroundColor: note.bgColor,
+          color: note.textColor,
+          animationDelay: `${Math.min(index * 40, 240)}ms`,
+        }
+      : { backgroundColor: note.bgColor, color: note.textColor }
 
   return (
     <Link
@@ -69,7 +86,11 @@ export default function NoteCard({ note, onArchived, onDeleted, className = '', 
     >
       <div className="absolute top-2 right-2 hidden sm:flex gap-1">
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/view/${note.id}`) }}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            navigate(`/view/${note.id}`)
+          }}
           title="View"
           className="rounded-md bg-white/70 text-black dark:bg-black/40 dark:text-white backdrop-blur px-2 py-1 text-xs hover:opacity-100 opacity-90"
           aria-label="View note"
@@ -94,12 +115,22 @@ export default function NoteCard({ note, onArchived, onDeleted, className = '', 
         </button>
       </div>
 
-      <div className="font-semibold mb-1 line-clamp-2" style={{ color: note.textColor }}>{title}</div>
-      <div className="text-sm opacity-90 whitespace-pre-wrap line-clamp-3" style={{ color: note.textColor }}>
+      <div className="font-semibold mb-1 line-clamp-2" style={{ color: note.textColor }}>
+        {title}
+      </div>
+      <div
+        className="text-sm opacity-90 whitespace-pre-wrap line-clamp-3"
+        style={{ color: note.textColor }}
+      >
         {preview || <span className="italic opacity-70">No content</span>}
       </div>
       <div className="text-xs opacity-70 mt-2" style={{ color: note.textColor }}>
-        {new Date(note.updatedAt).toLocaleString()} {note.archived && <span className="ml-2 px-2 py-0.5 rounded-full border border-current/30 text-[10px] align-middle">Archived</span>}
+        {new Date(note.updatedAt).toLocaleString()}{' '}
+        {note.archived && (
+          <span className="ml-2 px-2 py-0.5 rounded-full border border-current/30 text-[10px] align-middle">
+            Archived
+          </span>
+        )}
       </div>
 
       {/* Mobile actions */}

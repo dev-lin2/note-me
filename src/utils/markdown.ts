@@ -37,9 +37,7 @@ export function toHtmlFromMarkdownOrHtml(input: string): string {
 
   if (tags.size === 0 || (looksLikeMd && onlyTrivialWrappers(tags))) {
     // Convert potential line breaks before extracting text
-    const withBreaks = input
-      .replace(/<br\s*\/?>(?!\n)/gi, '\n')
-      .replace(/<\/(p|div)>/gi, '\n')
+    const withBreaks = input.replace(/<br\s*\/?>(?!\n)/gi, '\n').replace(/<\/(p|div)>/gi, '\n')
     const tmp = document.createElement('div')
     tmp.innerHTML = withBreaks
     const text = tmp.textContent || ''

@@ -20,4 +20,3 @@ export function applyTheme(settings: AppSettings) {
     root.classList.toggle('dark', prefersDark)
   }
 }
-

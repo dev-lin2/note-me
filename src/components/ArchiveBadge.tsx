@@ -16,9 +16,12 @@ export default function ArchiveBadge() {
     return () => window.removeEventListener('notes:changed', onChanged as EventListener)
   }, [])
 
-  if (count == null) return (
-    <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">...</span>
-  )
+  if (count == null)
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 text-xs rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">
+        ...
+      </span>
+    )
 
   return (
     <span
@@ -30,4 +33,3 @@ export default function ArchiveBadge() {
     </span>
   )
 }
-

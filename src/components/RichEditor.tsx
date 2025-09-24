@@ -43,25 +43,90 @@ export default function RichEditor({ value, onChange, textColor = '#222' }: Prop
     cmd('createLink', url)
   }
 
-
   return (
     <div>
       <div className="flex flex-wrap items-center gap-1 border border-gray-200 dark:border-gray-700 rounded-md p-1 bg-white/70 dark:bg-black/40 backdrop-blur">
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" title="Bold" onClick={() => cmd('bold')}><b>B</b></button>
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 italic" title="Italic" onClick={() => cmd('italic')}>I</button>
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 underline" title="Underline" onClick={() => cmd('underline')}>U</button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          title="Bold"
+          onClick={() => cmd('bold')}
+        >
+          <b>B</b>
+        </button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 italic"
+          title="Italic"
+          onClick={() => cmd('italic')}
+        >
+          I
+        </button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 underline"
+          title="Underline"
+          onClick={() => cmd('underline')}
+        >
+          U
+        </button>
         <span className="mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700" />
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={() => cmd('formatBlock', '<h1>')} title="Heading 1">H1</button>
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={() => cmd('formatBlock', '<h2>')} title="Heading 2">H2</button>
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={() => cmd('formatBlock', '<blockquote>')} title="Quote">❝</button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={() => cmd('formatBlock', '<h1>')}
+          title="Heading 1"
+        >
+          H1
+        </button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={() => cmd('formatBlock', '<h2>')}
+          title="Heading 2"
+        >
+          H2
+        </button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={() => cmd('formatBlock', '<blockquote>')}
+          title="Quote"
+        >
+          ❝
+        </button>
         <span className="mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700" />
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={() => cmd('insertUnorderedList')} title="Bulleted list">• List</button>
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={() => cmd('insertOrderedList')} title="Numbered list">1. List</button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={() => cmd('insertUnorderedList')}
+          title="Bulleted list"
+        >
+          • List
+        </button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={() => cmd('insertOrderedList')}
+          title="Numbered list"
+        >
+          1. List
+        </button>
         <span className="mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700" />
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={onAddLink} title="Link">🔗</button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={onAddLink}
+          title="Link"
+        >
+          🔗
+        </button>
         <span className="mx-1 h-5 w-px bg-gray-200 dark:bg-gray-700" />
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={() => cmd('undo')} title="Undo">↶</button>
-        <button className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800" onClick={() => cmd('redo')} title="Redo">↷</button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={() => cmd('undo')}
+          title="Undo"
+        >
+          ↶
+        </button>
+        <button
+          className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800"
+          onClick={() => cmd('redo')}
+          title="Redo"
+        >
+          ↷
+        </button>
       </div>
       <div
         ref={ref}

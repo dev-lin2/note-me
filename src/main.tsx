@@ -10,7 +10,7 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 )
 
 // Ensure theme applied on initial mount as well

@@ -1,8 +1,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import SearchBar from '../components/SearchBar'
+
 import NoteCard from '../components/NoteCard'
-import { createNote, exportJSON, getAllNotes, importJSON, setOrders, updateNote, deleteNote } from '../lib/db'
+import SearchBar from '../components/SearchBar'
+import {
+  createNote,
+  deleteNote,
+  exportJSON,
+  getAllNotes,
+  importJSON,
+  setOrders,
+  updateNote,
+} from '../lib/db'
+
 import type { Note } from '../lib/schema'
 
 export default function Home() {
@@ -33,7 +43,7 @@ export default function Home() {
     setLoading(false)
   }
 
-    useEffect(() => {
+  useEffect(() => {
     load()
     const onChanged = () => load()
     window.addEventListener('notes:changed', onChanged as EventListener)
@@ -43,19 +53,17 @@ export default function Home() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
     const base = showArchived ? notes.filter((n) => n.archived) : notes.filter((n) => !n.archived)
-    const list = base
-      .slice()
-      .sort((a, b) => {
-        const ao = a.order
-        const bo = b.order
-        if (ao == null && bo == null) return b.updatedAt - a.updatedAt
-        if (ao == null) return 1
-        if (bo == null) return -1
-        return ao - bo
-      })
+    const list = base.slice().sort((a, b) => {
+      const ao = a.order
+      const bo = b.order
+      if (ao == null && bo == null) return b.updatedAt - a.updatedAt
+      if (ao == null) return 1
+      if (bo == null) return -1
+      return ao - bo
+    })
     if (!term) return list
     return list.filter(
-      (n) => n.title.toLowerCase().includes(term) || n.content.toLowerCase().includes(term)
+      (n) => n.title.toLowerCase().includes(term) || n.content.toLowerCase().includes(term),
     )
   }, [q, notes, showArchived])
 
@@ -108,10 +116,14 @@ export default function Home() {
     return (e: React.DragEvent) => {
       e.preventDefault()
       // hint move operation
-      try { (e.dataTransfer as DataTransfer).dropEffect = 'move' } catch {}
+      try {
+        ;(e.dataTransfer as DataTransfer).dropEffect = 'move'
+      } catch {
+        // ignore if not allowed
+      }
       // track drop target visually only
       // visual drop-target hint
-      (e.currentTarget as HTMLElement).classList.add('drop-target')
+      ;(e.currentTarget as HTMLElement).classList.add('drop-target')
     }
   }
 
@@ -138,7 +150,7 @@ export default function Home() {
 
   function onDragLeaveCard() {
     return (e: React.DragEvent) => {
-      (e.currentTarget as HTMLElement).classList.remove('drop-target')
+      ;(e.currentTarget as HTMLElement).classList.remove('drop-target')
     }
   }
 
@@ -184,7 +196,9 @@ export default function Home() {
             }}
             className={`px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 active:scale-[.98] ${justToggled ? 'animate-toggle-pulse' : ''}`}
           >
-            {showArchived ? 'Show Active' : `Show Archived (${notes.filter(n => n.archived).length})`}
+            {showArchived
+              ? 'Show Active'
+              : `Show Archived (${notes.filter((n) => n.archived).length})`}
           </button>
           <button
             onClick={onExport}
@@ -208,7 +222,9 @@ export default function Home() {
         </div>
       </div>
 
-      <div ref={gridRef} className={`mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-smooth ${justToggled ? 'animate-fade-in' : ''}${showArchived ? ' hidden' : ''}`}
+      <div
+        ref={gridRef}
+        className={`mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-smooth ${justToggled ? 'animate-fade-in' : ''}${showArchived ? ' hidden' : ''}`}
       >
         {loading && (
           <>
@@ -258,15 +274,43 @@ export default function Home() {
           {!loading && filtered.length > 0 && (
             <div className="rounded-md border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-800 overflow-hidden">
               {filtered.map((n) => (
-                <div key={n.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-white/60 dark:bg-black/40 backdrop-blur">
+                <div
+                  key={n.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3 bg-white/60 dark:bg-black/40 backdrop-blur"
+                >
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold truncate">{n.title?.trim() || 'Untitled'}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-300 truncate">{new Date(n.updatedAt).toLocaleString()}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                      {new Date(n.updatedAt).toLocaleString()}
+                    </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-2 w-full sm:w-auto">
-                    <button onClick={() => navigate(`/view/${n.id}`)} className="px-3 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900">View</button>
-                    <button onClick={async () => { await updateNote(n.id, { archived: false }); load() }} className="px-3 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900">Unarchive</button>
-                    <button onClick={async () => { if (confirm('Delete this note?')) { await deleteNote(n.id); load() } }} className="px-3 py-1.5 rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950">Delete</button>
+                    <button
+                      onClick={() => navigate(`/view/${n.id}`)}
+                      className="px-3 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await updateNote(n.id, { archived: false })
+                        load()
+                      }}
+                      className="px-3 py-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900"
+                    >
+                      Unarchive
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (confirm('Delete this note?')) {
+                          await deleteNote(n.id)
+                          load()
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               ))}

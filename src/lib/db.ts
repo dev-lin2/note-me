@@ -1,5 +1,6 @@
 // Minimal IndexedDB wrapper for NoteMe (no external deps)
 import { nanoid } from 'nanoid'
+
 import type { Note } from './schema'
 
 const DB_NAME = 'note-me'
@@ -23,7 +24,7 @@ function openDB(): Promise<IDBDatabase> {
 
 function run<T = unknown>(
   mode: IDBTransactionMode,
-  fn: (store: IDBObjectStore) => IDBRequest
+  fn: (store: IDBObjectStore) => IDBRequest,
 ): Promise<T> {
   return openDB().then(
     (db) =>
@@ -33,12 +34,12 @@ function run<T = unknown>(
         const req = fn(store)
         req.onsuccess = () => resolve(req.result as T)
         req.onerror = () => reject(req.error)
-      })
+      }),
   )
 }
 
 export async function getAllNotes(): Promise<Note[]> {
-  const notes = await run<any[]>('readonly', (s) => s.getAll())
+  const notes = await run<Note[]>('readonly', (s) => s.getAll())
   return (notes || []).sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
@@ -60,7 +61,13 @@ export async function createNote(partial: Partial<Note> = {}): Promise<Note> {
     archived: false,
   }
   await run('readwrite', (s) => s.put(note))
-  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'create', id: note.id } })) } catch {}
+  try {
+    window.dispatchEvent(
+      new CustomEvent('notes:changed', { detail: { type: 'create', id: note.id } }),
+    )
+  } catch {
+    // ignore if window is not available
+  }
   return note
 }
 
@@ -69,13 +76,21 @@ export async function updateNote(id: string, patch: Partial<Note>): Promise<Note
   if (!existing) throw new Error('Note not found')
   const updated: Note = { ...existing, ...patch, updatedAt: Date.now() }
   await run('readwrite', (s) => s.put(updated))
-  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'update', id } })) } catch {}
+  try {
+    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'update', id } }))
+  } catch {
+    // ignore if window is not available
+  }
   return updated
 }
 
 export async function deleteNote(id: string): Promise<void> {
   await run('readwrite', (s) => s.delete(id))
-  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'delete', id } })) } catch {}
+  try {
+    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'delete', id } }))
+  } catch {
+    // ignore if window is not available
+  }
 }
 
 // Persist an explicit order for the provided note IDs (0..n-1)
@@ -103,9 +118,13 @@ export async function setOrders(ids: string[]): Promise<void> {
         assignNext()
         tx.oncomplete = () => resolve()
         tx.onabort = () => reject(tx.error)
-      })
+      }),
   )
-  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'reorder', ids } })) } catch {}
+  try {
+    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'reorder', ids } }))
+  } catch {
+    // ignore if window is not available
+  }
 }
 
 export async function exportJSON(): Promise<string> {
@@ -124,7 +143,11 @@ export async function importJSON(json: string): Promise<void> {
         for (const n of data.notes) store.put(n)
         tx.oncomplete = () => resolve()
         tx.onabort = () => reject(tx.error)
-      })
+      }),
   )
-  try { window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'import' } })) } catch {}
+  try {
+    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'import' } }))
+  } catch {
+    // ignore if window is not available
+  }
 }

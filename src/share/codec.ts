@@ -1,5 +1,5 @@
 import { deflate, inflate } from './compress'
-import { encryptAesGcm, decryptAesGcm } from './crypto'
+import { decryptAesGcm, encryptAesGcm } from './crypto'
 
 export type SharedPayloadV1 = {
   v: 1
@@ -14,18 +14,22 @@ export type SharedPayloadV1 = {
   }
 }
 
-export function validatePayload(obj: any): obj is SharedPayloadV1 {
-  return (
-    obj &&
-    obj.v === 1 &&
-    obj.note &&
-    typeof obj.note.title === 'string' &&
-    typeof obj.note.content === 'string' &&
-    typeof obj.note.updatedAt === 'number'
-  )
+export function validatePayload(obj: unknown): obj is SharedPayloadV1 {
+  if (typeof obj !== 'object' || obj === null) return false
+  const o = obj as Record<string, unknown>
+  if (o['v'] !== 1) return false
+  const note = o['note']
+  if (typeof note !== 'object' || note === null) return false
+  const n = note as Record<string, unknown>
+  if (typeof n['title'] !== 'string') return false
+  if (typeof n['content'] !== 'string') return false
+  if (typeof n['updatedAt'] !== 'number') return false
+  return true
 }
 
-export async function encodePayload(payload: SharedPayloadV1): Promise<{ c: string; k: string; rawSize: number; compressedSize: number }> {
+export async function encodePayload(
+  payload: SharedPayloadV1,
+): Promise<{ c: string; k: string; rawSize: number; compressedSize: number }> {
   const json = JSON.stringify(payload)
   const raw = new TextEncoder().encode(json)
   const compressed = await deflate(raw)
@@ -41,4 +45,3 @@ export async function decodePayload(c: string, k: string): Promise<SharedPayload
   if (!validatePayload(obj)) throw new Error('Schema mismatch')
   return obj
 }
-
