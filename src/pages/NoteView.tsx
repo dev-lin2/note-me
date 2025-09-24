@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { deleteNote, getNote, updateNote } from '../lib/db'
 import { sanitizeHtml } from '../utils/sanitize'
+import { toHtmlFromMarkdownOrHtml } from '../utils/markdown'
 import type { Note } from '../lib/schema'
 import { encodePayload } from '../share/codec'
 import { buildShareUrl, isHashTooLong } from '../share/link'
@@ -113,7 +114,11 @@ export default function NoteView() {
           {note.title?.trim() || 'Untitled'}
         </h1>
         {note.content ? (
-          <div className="wysiwyg leading-6 break-words" style={{ color: note.textColor }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(note.content) }} />
+          <div
+            className="wysiwyg leading-6 break-words"
+            style={{ color: note.textColor }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(toHtmlFromMarkdownOrHtml(note.content)) }}
+          />
         ) : (
           <div className="italic opacity-70">No content</div>
         )}

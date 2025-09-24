@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { decodePayload } from '../share/codec'
 import { sanitizeHtml } from '../utils/sanitize'
+import { toHtmlFromMarkdownOrHtml } from '../utils/markdown'
 import { createNote } from '../lib/db'
 
 type State =
@@ -88,7 +89,11 @@ export default function SharedNotePage() {
             {note.title?.trim() || 'Untitled'}
           </h1>
           {note.content ? (
-            <div className="wysiwyg leading-6 break-words" style={{ color: note.textColor }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(note.content) }} />
+            <div
+              className="wysiwyg leading-6 break-words"
+              style={{ color: note.textColor }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(toHtmlFromMarkdownOrHtml(note.content)) }}
+            />
           ) : (
             <div className="italic opacity-70">No content</div>
           )}
