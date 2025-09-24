@@ -106,7 +106,7 @@ export default function NoteView() {
 
       {/* Read-only card */}
       <article
-        className="rounded-md border mt-3 p-4 transition-smooth overflow-hidden"
+        className="rounded-md border mt-3 p-4 transition-smooth"
         style={{ backgroundColor: note.bgColor, color: note.textColor }}
       >
         <h1 className="text-2xl font-semibold mb-2 break-words" style={{ color: note.textColor }}>

@@ -81,7 +81,7 @@ export default function SharedNotePage() {
           Shared note (read-only)
         </div>
         <article
-          className="rounded-md border mt-2 p-4 transition-smooth overflow-hidden"
+          className="rounded-md border mt-2 p-4 transition-smooth"
           style={{ backgroundColor: note.bgColor, color: note.textColor }}
         >
           <h1 className="text-2xl font-semibold mb-2 break-words" style={{ color: note.textColor }}>
@@ -141,4 +141,3 @@ export default function SharedNotePage() {
 
   return body
 }
-

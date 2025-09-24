@@ -15,11 +15,20 @@ export function sanitizeHtml(input: string): string {
       for (const attr of Array.from(el.attributes)) {
         const name = attr.name.toLowerCase()
         const value = attr.value
+        // Strip event handlers
         if (name.startsWith('on')) {
           el.removeAttribute(attr.name)
+          continue
         }
+        // Disallow javascript: URLs
         if ((name === 'href' || name === 'src') && /^\s*javascript:/i.test(value)) {
           el.removeAttribute(attr.name)
+          continue
+        }
+        // Drop inline styles and classes to prevent pasted theme colors (e.g., VS Code)
+        if (name === 'style' || name === 'class' || name === 'bgcolor' || name === 'color') {
+          el.removeAttribute(attr.name)
+          continue
         }
       }
     }
@@ -38,4 +47,3 @@ export function stripHtmlToText(input: string): string {
   div.innerHTML = input || ''
   return (div.textContent || '').trim()
 }
-

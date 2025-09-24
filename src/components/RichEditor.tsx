@@ -65,7 +65,7 @@ export default function RichEditor({ value, onChange, textColor = '#222' }: Prop
       </div>
       <div
         ref={ref}
-        className="mt-2 min-h-[55vh] rounded-md border border-gray-200 dark:border-gray-700 p-3 outline-none focus:ring-2 focus:ring-blue-500 bg-transparent leading-6 wysiwyg"
+        className="mt-2 min-h-[55vh] rounded-md border border-gray-200 dark:border-gray-700 p-3 outline-none focus:ring-2 focus:ring-blue-500 bg-transparent leading-6 wysiwyg break-words"
         contentEditable
         onInput={onInput}
         onPaste={onPaste}
