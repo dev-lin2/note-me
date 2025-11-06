@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createNote, deleteNote, getNote, updateNote } from '../lib/db'
 import type { Note } from '../lib/schema'
@@ -11,6 +11,7 @@ import { copyText } from '../utils/clipboard'
 // ShareButton removed per request; copy buttons now produce share links
 
 export default function NoteEditor({ createNew = false }: { createNew?: boolean }) {
+  const hasInitialized = useRef(false)
   const params = useParams()
   const navigate = useNavigate()
   const [note, setNote] = useState<Note | null>(null)
@@ -34,38 +35,46 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
   }
 
   useEffect(() => {
-    let cancelled = false
     async function init() {
       setLoading(true)
       if (createNew) {
-        const n = await createNote(defaults())
-        if (!cancelled) {
-          setNote(n)
+        if (!hasInitialized.current) {
+          hasInitialized.current = true
+          // don't create note immediately, instead, create a temporary note
+          // and only save it when the user types something.
+          setNote({
+            id: '',
+            title: '',
+            content: '',
+            ...defaults(),
+            createdAt: new Date().getTime(),
+            updatedAt: new Date().getTime(),
+            archived: false,
+          })
           setLoading(false)
-          navigate(`/note/${n.id}`, { replace: true })
         }
         return
       }
+
       if (id) {
         const n = await getNote(id)
         if (!n) {
+          // if note not found, create a new one.
+          // this can happen if the user manually changes the url
+          // or if the note was deleted.
           const created = await createNote(defaults())
-          if (!cancelled) {
-            setNote(created)
-            setLoading(false)
-            navigate(`/note/${created.id}`, { replace: true })
-          }
+          setNote(created)
+          setLoading(false)
+          navigate(`/note/${created.id}`, { replace: true })
           return
         }
-        if (!cancelled) {
-          setNote(n)
-          setLoading(false)
-        }
+        setNote(n)
+        setLoading(false)
       }
     }
-    init()
-    return () => {
-      cancelled = true
+
+    if (!hasInitialized.current) {
+      init()
     }
   }, [id, createNew, navigate])
 
@@ -73,6 +82,17 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
     () =>
       debounce(async (value: string) => {
         if (!note) return
+        // if note is not created yet, create it
+        if (!note.id) {
+          const newNote = await createNote({ ...note, title: value.slice(0, 120) })
+          setNote(newNote)
+          navigate(`/note/${newNote.id}`, { replace: true })
+          setSaving(false)
+          setShowSaved(true)
+          setTimeout(() => setShowSaved(false), 1200)
+          return
+        }
+
         const updated = await updateNote(note.id, { title: value.slice(0, 120) })
         setNote(updated)
         setSaving(false)
@@ -87,6 +107,18 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
     () =>
       debounce(async (value: string) => {
         if (!note) return
+
+        // if note is not created yet, create it
+        if (!note.id) {
+          const newNote = await createNote({ ...note, content: value })
+          setNote(newNote)
+          navigate(`/note/${newNote.id}`, { replace: true })
+          setSaving(false)
+          setShowSaved(true)
+          setTimeout(() => setShowSaved(false), 1200)
+          return
+        }
+
         const updated = await updateNote(note.id, { content: value })
         setNote(updated)
         setSaving(false)
@@ -121,6 +153,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
             {/* Mobile action row */}
             <div className="grid grid-cols-3 gap-2 sm:hidden w-full">
               <button
+                disabled={!note.id}
                 onClick={async () => {
                   try {
                     const payload = {
@@ -152,7 +185,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
                     setTimeout(() => setLinkError(null), 1800)
                   }
                 }}
-                className="w-full px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth inline-flex items-center justify-center gap-2"
+                className="w-full px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Copy link"
               >
                 <svg
@@ -167,11 +200,12 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
                 Copy
               </button>
               <button
+                disabled={!note.id}
                 onClick={async () => {
                   const updated = await updateNote(note.id, { archived: !note.archived })
                   setNote(updated)
                 }}
-                className="w-full px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth inline-flex items-center justify-center gap-2"
+                className="w-full px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={note.archived ? 'Unarchive note' : 'Archive note'}
               >
                 {note.archived ? (
@@ -203,13 +237,14 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
                 )}
               </button>
               <button
+                disabled={!note.id}
                 onClick={async () => {
                   if (confirm('Delete this note?')) {
                     await deleteNote(note.id)
                     navigate('/')
                   }
                 }}
-                className="w-full px-3 py-2 rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 transition-smooth inline-flex items-center justify-center gap-2"
+                className="w-full px-3 py-2 rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 transition-smooth inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Delete note"
               >
                 <svg
@@ -227,8 +262,9 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
             {/* Desktop action row */}
             <div className="hidden sm:flex items-center gap-2 text-sm">
               <button
+                disabled={!note.id}
                 onClick={() => navigate(`/view/${note.id}`)}
-                className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98] inline-flex items-center gap-2"
+                className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98] inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
                   width="16"
@@ -243,6 +279,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
               </button>
               {/* ShareButton removed; copy action generates share link */}
               <button
+                disabled={!note.id}
                 onClick={async () => {
                   try {
                     const payload = {
@@ -274,7 +311,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
                     setTimeout(() => setLinkError(null), 1800)
                   }
                 }}
-                className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98] inline-flex items-center gap-2"
+                className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98] inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
                   width="16"
@@ -288,11 +325,12 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
                 Copy Link
               </button>
               <button
+                disabled={!note.id}
                 onClick={async () => {
                   const updated = await updateNote(note.id, { archived: !note.archived })
                   setNote(updated)
                 }}
-                className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98] inline-flex items-center gap-2"
+                className="px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-smooth active:scale-[.98] inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {note.archived ? (
                   <>
@@ -323,13 +361,14 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
                 )}
               </button>
               <button
+                disabled={!note.id}
                 onClick={async () => {
                   if (confirm('Delete this note?')) {
                     await deleteNote(note.id)
                     navigate('/')
                   }
                 }}
-                className="px-3 py-2 rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 transition-smooth active:scale-[.98] inline-flex items-center gap-2"
+                className="px-3 py-2 rounded-md border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950 transition-smooth active:scale-[.98] inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg
                   width="16"
@@ -354,8 +393,9 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
           <input
             className="title-input w-full text-2xl font-semibold mb-2 placeholder-black/40 dark:placeholder-white/50"
             placeholder="Title"
-            defaultValue={note.title}
+            value={note.title}
             onChange={(e) => {
+              setNote({ ...note, title: e.target.value })
               setSaving(true)
               saveTitle(e.target.value)
             }}
@@ -365,6 +405,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
           <RichEditor
             value={note.content}
             onChange={(html) => {
+              setNote({ ...note, content: html })
               setSaving(true)
               saveContent(html)
             }}
@@ -377,12 +418,18 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
             bgColor={note.bgColor}
             textColor={note.textColor}
             onChange={async (bg, text) => {
+              if (!note.id) {
+                setNote({ ...note, bgColor: bg, textColor: text })
+                return
+              }
               const updated = await updateNote(note.id, { bgColor: bg, textColor: text })
               setNote(updated)
             }}
           />
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            Last edited: {new Date(note.updatedAt).toLocaleString()}
+            {note.id
+              ? `Last edited: ${new Date(note.updatedAt).toLocaleString()}`
+              : 'Not saved yet'}
           </div>
         </div>
       </div>
@@ -391,13 +438,6 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
           <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 px-3 py-2 shadow-md text-sm">
             Saved
-          </div>
-        </div>
-      )}
-      {linkCopied && (
-        <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
-          <div className="rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 px-3 py-2 shadow-md text-sm">
-            Link copied
           </div>
         </div>
       )}
