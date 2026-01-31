@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { createNote, deleteNote, getNote, updateNote } from '../lib/db'
-import type { Note } from '../lib/schema'
+
 import ColorPicker from '../components/ColorPicker'
 import RichEditor from '../components/RichEditor'
-import { debounce } from '../utils/debounce'
+import { createNote, deleteNote, getNote, updateNote } from '../lib/db'
+import { DEFAULT_NOTE_BG, DEFAULT_NOTE_TEXT } from '../lib/schema'
 import { encodePayload } from '../share/codec'
 import { buildShareUrl, isHashTooLong } from '../share/link'
 import { copyText } from '../utils/clipboard'
-// ShareButton removed per request; copy buttons now produce share links
+import { debounce } from '../utils/debounce'
+
+import type { Note } from '../lib/schema'
 
 export default function NoteEditor({ createNew = false }: { createNew?: boolean }) {
   const hasInitialized = useRef(false)
@@ -24,14 +26,7 @@ export default function NoteEditor({ createNew = false }: { createNew?: boolean 
   const id = params.id
 
   function defaults() {
-    try {
-      const raw = localStorage.getItem('noteme:settings')
-      if (!raw) return { bgColor: '#FFF8C5', textColor: '#222222' }
-      const s = JSON.parse(raw)
-      return { bgColor: s.defaultBg || '#FFF8C5', textColor: s.defaultText || '#222222' }
-    } catch {
-      return { bgColor: '#FFF8C5', textColor: '#222222' }
-    }
+    return { bgColor: DEFAULT_NOTE_BG, textColor: DEFAULT_NOTE_TEXT }
   }
 
   useEffect(() => {

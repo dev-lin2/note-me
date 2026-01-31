@@ -39,15 +39,27 @@ export function passesAA(bg: string, fg: string) {
   return contrastRatio(bg, fg) >= 4.5
 }
 
-export const PRESET_COLORS = [
-  '#FFF8C5',
-  '#FFEDD5',
-  '#E0F2FE',
-  '#DCFCE7',
-  '#FCE7F3',
-  '#E2E8F0',
-  '#FEF3C7',
-  '#FAE8FF',
-  '#FEE2E2',
-  '#F5F5F4',
+// Dark backgrounds (for light text)
+export const DARK_PRESETS = [
+  '#1e1e1e', // Default dark
+  '#1a1a2e', // Deep navy
+  '#16213e', // Dark blue
+  '#1b2838', // Steam dark
+  '#2d2d2d', // Charcoal
+  '#1e3a5f', // Dark ocean
+  '#2c3e50', // Midnight blue
+  '#1a1a1a', // Near black
 ]
+
+// Light backgrounds (for dark text)
+export const LIGHT_PRESETS = [
+  '#FFF8C5', // Warm yellow
+  '#FFEDD5', // Peach
+  '#E0F2FE', // Sky blue
+  '#DCFCE7', // Mint
+  '#FCE7F3', // Pink
+  '#F5F5F4', // Stone
+]
+
+// Combined for color picker (dark first since default is dark)
+export const PRESET_COLORS = [...DARK_PRESETS.slice(0, 5), ...LIGHT_PRESETS.slice(0, 5)]

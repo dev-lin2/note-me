@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { applyTheme, loadSettings } from '../lib/theme'
 
 import type { AppSettings } from '../lib/schema'
 
 export default function Settings() {
+  const navigate = useNavigate()
   const [settings, setSettings] = useState<AppSettings>(loadSettings())
 
   useEffect(() => {
@@ -13,64 +15,89 @@ export default function Settings() {
   }, [settings])
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h2 className="text-xl font-semibold mb-1">Settings</h2>
-      <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-        Personalize your NoteMe experience.
-      </p>
-      <div className="space-y-4">
-        <div className="rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-zinc-900">
-          <div className="flex items-center justify-between">
-            <label className="font-medium">Theme</label>
-            <select
-              className="border rounded px-2 py-1 bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-200 dark:border-gray-700"
-              value={settings.theme}
-              onChange={(e) =>
-                setSettings({ ...settings, theme: e.target.value as AppSettings['theme'] })
-              }
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/')}
+              className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-smooth active:scale-[.98] inline-flex items-center gap-2"
             >
-              <option value="system">System</option>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              <span className="hidden sm:inline">Back</span>
+            </button>
+            <h1 className="text-lg font-semibold">Settings</h1>
           </div>
         </div>
-        <div className="rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-zinc-900">
-          <div className="flex items-center justify-between">
-            <label className="font-medium">Density</label>
-            <select
-              className="border rounded px-2 py-1 bg-white text-black dark:bg-zinc-800 dark:text-white border-gray-200 dark:border-gray-700"
-              value={settings.density}
-              onChange={(e) =>
-                setSettings({ ...settings, density: e.target.value as AppSettings['density'] })
-              }
-            >
-              <option value="comfortable">Comfortable</option>
-              <option value="compact">Compact</option>
-            </select>
-          </div>
-        </div>
-        <div className="rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-zinc-900">
-          <div className="flex items-center justify-between">
-            <label className="font-medium">Default Background</label>
-            <input
-              type="color"
-              value={settings.defaultBg}
-              onChange={(e) => setSettings({ ...settings, defaultBg: e.target.value })}
-              className="h-8 w-12"
-            />
-          </div>
-        </div>
-        <div className="rounded-md border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-zinc-900">
-          <div className="flex items-center justify-between">
-            <label className="font-medium">Default Text</label>
-            <input
-              type="color"
-              value={settings.defaultText}
-              onChange={(e) => setSettings({ ...settings, defaultText: e.target.value })}
-              className="h-8 w-12"
-            />
-          </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 px-4 py-6">
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* Theme Section */}
+          <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="font-medium">Appearance</h2>
+            </div>
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-sm">Theme</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    Choose how NoteMe looks
+                  </div>
+                </div>
+                <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  {(['system', 'light', 'dark'] as const).map((theme) => (
+                    <button
+                      key={theme}
+                      onClick={() => setSettings({ ...settings, theme })}
+                      className={`px-3 py-2 text-sm capitalize transition-smooth ${
+                        settings.theme === theme
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-700'
+                      }`}
+                    >
+                      {theme}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* About Section */}
+          <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-zinc-900 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+              <h2 className="font-medium">About</h2>
+            </div>
+            <div className="p-4 space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Version</span>
+                <span>0.1.0</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Storage</span>
+                <span>Local (IndexedDB)</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-100 dark:border-gray-800">
+                NoteMe stores all your notes locally on this device. Notes can be shared via
+                encrypted links.
+              </p>
+            </div>
+          </section>
         </div>
       </div>
     </div>
