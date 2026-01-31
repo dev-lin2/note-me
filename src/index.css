@@ -135,70 +135,287 @@ body,
   animation: togglePulse 220ms ease-out;
 }
 
+/* Spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Slide up animation for toasts */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+.animate-slide-up {
+  animation: slideUp 200ms ease-out both;
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation: none !important;
-    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
 /* WYSIWYG content defaults */
+.wysiwyg {
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+
+/* First and last element margin cleanup */
+.wysiwyg > :first-child {
+  margin-top: 0;
+}
+.wysiwyg > :last-child {
+  margin-bottom: 0;
+}
+
+/* Headings */
 .wysiwyg :where(h1) {
   font-size: 1.5rem;
-  line-height: 1.25;
-  margin: 0.5rem 0;
+  line-height: 1.3;
+  margin: 1.5rem 0 0.75rem;
   font-weight: 700;
 }
 .wysiwyg :where(h2) {
   font-size: 1.25rem;
-  line-height: 1.3;
-  margin: 0.5rem 0;
+  line-height: 1.35;
+  margin: 1.25rem 0 0.625rem;
   font-weight: 600;
 }
 .wysiwyg :where(h3) {
   font-size: 1.125rem;
-  line-height: 1.35;
-  margin: 0.5rem 0;
+  line-height: 1.4;
+  margin: 1rem 0 0.5rem;
   font-weight: 600;
 }
-.wysiwyg :where(p) {
-  margin: 0.5rem 0;
+.wysiwyg :where(h4, h5, h6) {
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
 }
+
+/* Paragraphs */
+.wysiwyg :where(p) {
+  margin: 0.75rem 0;
+}
+
+/* Lists */
 .wysiwyg :where(ul) {
   list-style: disc;
-  padding-left: 1.25rem;
-  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
 }
 .wysiwyg :where(ol) {
   list-style: decimal;
-  padding-left: 1.25rem;
-  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
 }
+.wysiwyg :where(li) {
+  margin: 0.25rem 0;
+  padding-left: 0.25rem;
+}
+.wysiwyg :where(li > ul, li > ol) {
+  margin: 0.25rem 0;
+}
+
+/* Nested lists */
+.wysiwyg :where(ul ul) {
+  list-style: circle;
+}
+.wysiwyg :where(ul ul ul) {
+  list-style: square;
+}
+
+/* Blockquotes */
 .wysiwyg :where(blockquote) {
-  border-left: 3px solid currentColor;
-  padding-left: 0.75rem;
-  margin: 0.5rem 0;
-  opacity: 0.9;
+  border-left: 4px solid currentColor;
+  padding: 0.5rem 0 0.5rem 1rem;
+  margin: 1rem 0;
+  opacity: 0.85;
+  font-style: italic;
 }
-.wysiwyg :where(code, pre) {
+.wysiwyg :where(blockquote p) {
+  margin: 0.5rem 0;
+}
+
+/* Code - monospace font family */
+.wysiwyg :where(code, pre, kbd, samp) {
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
+  font-size: 0.9em;
 }
+
+/* Inline code */
+.wysiwyg :where(code) {
+  background-color: rgba(0, 0, 0, 0.08);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+}
+
+/* Code blocks */
 .wysiwyg :where(pre) {
   background-color: rgba(0, 0, 0, 0.06);
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  overflow: auto;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  line-height: 1.5;
 }
+.wysiwyg :where(pre code) {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+}
+
+/* Links */
 .wysiwyg :where(a) {
   text-decoration: underline;
   text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: opacity 150ms ease;
 }
-.wysiwyg {
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
+.wysiwyg :where(a:hover) {
+  opacity: 0.8;
+}
+
+/* Horizontal rules */
+.wysiwyg :where(hr) {
+  border: none;
+  border-top: 1px solid currentColor;
+  opacity: 0.25;
+  margin: 1.5rem 0;
+}
+
+/* Tables */
+.wysiwyg :where(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9375rem;
+}
+.wysiwyg :where(th, td) {
+  border: 1px solid currentColor;
+  border-color: rgba(128, 128, 128, 0.3);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.wysiwyg :where(th) {
+  font-weight: 600;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+.wysiwyg :where(tr:nth-child(even)) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Images */
+.wysiwyg :where(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+  margin: 0.75rem 0;
+}
+
+/* Strong and emphasis */
+.wysiwyg :where(strong, b) {
+  font-weight: 600;
+}
+.wysiwyg :where(em, i) {
+  font-style: italic;
+}
+
+/* Strikethrough */
+.wysiwyg :where(del, s) {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Mark/highlight */
+.wysiwyg :where(mark) {
+  background-color: rgba(255, 235, 59, 0.4);
+  padding: 0.1rem 0.2rem;
+  border-radius: 0.125rem;
+}
+
+/* Task lists (GFM) */
+.wysiwyg :where(input[type='checkbox']) {
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Definition lists */
+.wysiwyg :where(dl) {
+  margin: 0.75rem 0;
+}
+.wysiwyg :where(dt) {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+.wysiwyg :where(dd) {
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Subscript and superscript */
+.wysiwyg :where(sub, sup) {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+.wysiwyg :where(sup) {
+  top: -0.5em;
+}
+.wysiwyg :where(sub) {
+  bottom: -0.25em;
+}
+
+/* Dark mode adjustments for wysiwyg */
+.dark .wysiwyg :where(code) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.dark .wysiwyg :where(pre) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.dark .wysiwyg :where(th) {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+.dark .wysiwyg :where(tr:nth-child(even)) {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+.dark .wysiwyg :where(mark) {
+  background-color: rgba(255, 235, 59, 0.3);
 }
