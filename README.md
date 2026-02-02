@@ -2,6 +2,10 @@
 
 A lightweight, local‑first notes app with instant autosave, offline storage, and keyboard‑first workflow.
 
+## Demo
+
+You can check the demo here [Demo](https://note-me-dev.netlify.app/)
+
 ## Features
 
 - Create/edit colorful notes with autosave
