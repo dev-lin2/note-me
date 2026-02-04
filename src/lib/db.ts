@@ -93,6 +93,15 @@ export async function deleteNote(id: string): Promise<void> {
   }
 }
 
+export async function clearNotes(): Promise<void> {
+  await run('readwrite', (s) => s.clear())
+  try {
+    window.dispatchEvent(new CustomEvent('notes:changed', { detail: { type: 'clear' } }))
+  } catch {
+    // ignore if window is not available
+  }
+}
+
 // Persist an explicit order for the provided note IDs (0..n-1)
 export async function setOrders(ids: string[]): Promise<void> {
   await openDB().then(
